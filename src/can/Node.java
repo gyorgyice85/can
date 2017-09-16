@@ -8,14 +8,14 @@ import java.util.*;
  */
 public class Node {
 
-    /** The CAN zone of this node. */
+    /** Die CAN Zone dieses Nodes. */
     private Zone zone;
-    /** The set of peer node of this node. */
+    /** Liste von Peers dieses Nodes. */
     private ArrayList<Node> peers;
 
     public static int MAX_PEERS = 3;
-    private int peerCount;
-    /** The set of fotos stored locally in this can node, as mapping of fotoID (integer) to filename (string). */
+    private int peerCount = 0;
+    /** Das Set der Fotos dieses Nodes. Key: FotoID (integer), Value: filename (string) */
     private HashMap<Integer, String> fotos;
 
     public Node(Zone zone) {
@@ -54,10 +54,12 @@ public class Node {
     /////////////////////////////////////////////////////////
 
     /**
-     * Adds a new peer to this node and its current peers. It also inserts all fotos into the new peer node.
-     * If the number of peers would get larger than MAX_PEERS, the zone will be split, and the nodes updated.
+     * Zuweisung ein neues Peer zu diesem Node und zu zeinen Peers.
+     * Alle Fotos werden zu dem neuen Peer zugewiesen.
+     * Wenn die Anzahl von Peers groesser als MAX_PEERS, die Zone wird aufgeteilt und
+     * die Nodes werden updated.
      *
-     * @param node the new peer of the node
+     * @param node das neue Peer von Node
      */
     public void addPeer(Node node) {
 
@@ -65,7 +67,7 @@ public class Node {
             throw new IllegalArgumentException("ERROR: " + node + " has a different zone than this nodes zone.");
         }
 
-        // register new peer at this node's the current peers
+        // fuegt ein neues Peer zu Peers dieses Nodes ein
         for (Node peer : peers) {
             peer.peers.add(node);
             peer.peerCount++;
@@ -73,14 +75,14 @@ public class Node {
             node.peerCount++;
         }
 
-        // register new peer at this node
+        // fuegt ein neues Peer zu diesem Node ein
         this.peers.add(node);
         this.peerCount++;
         node.peers.add(this);
         node.peerCount++;
 
 
-        // inserts all fotos into the new peer node
+        // fuegt alle Fotos zu neuem Peer
         node.fotos.putAll(fotos);
 
         if (peerCount == MAX_PEERS + 1) {
@@ -89,24 +91,23 @@ public class Node {
     }
 
     /**
-     * Method for splitting a zone and updating the peers' state:
-     *  (1) assign the new splitted zones to each peer
-     *  (2) assign new peers according to the new zone of the peers
-     *  (3) delete fotos that fall outside of the new zones of the peers
+     * Methode fuer Splitting einer Zone
      */
     private void splitZone() {
 
-        Pair<Zone, Zone> newZones = zone.split();
-        Zone zoneA = newZones.getKey();
-        Zone zoneB = newZones.getValue();
+        // Pair Klasse um zwei Zonen zurueckzugeben
 
-        // the first half of the peers will be moved to zoneA
-        ArrayList<Node> peersInZoneA = new ArrayList<Node>(peers.subList(0, (MAX_PEERS + 1) / 2 + 1));
-        // the second half of the peers plus this node will be moved to zoneB
-        ArrayList<Node> peersInZoneB = new ArrayList<Node>(peers.subList((MAX_PEERS + 1) / 2 + 1, MAX_PEERS + 1));
+        Pair<Zone, Zone> newZones = zone.split();
+        Zone zoneA = newZones.getKey();   //nicht gleich mit Key von Foto
+        Zone zoneB = newZones.getValue(); //nicht gleich mit Value von Foto
+
+        // Die erste Haelfte der Peers werden zum ZoneA zugewiesen
+        ArrayList<Node> peersInZoneA = new ArrayList<Node>(peers.subList(0, ((MAX_PEERS + 1) / 2) + 1));
+        // Die zweite Haelfte der Peers mit diesem Node werden zum ZoneB zugewiesen
+        ArrayList<Node> peersInZoneB = new ArrayList<Node>(peers.subList(((MAX_PEERS + 1) / 2 )+ 1, MAX_PEERS + 1));
         peersInZoneB.add(this);
 
-        // create a list of fotos in zoneA and zoneB
+        // Liste fuer Fotos aus ZoneA und ZoneB zu erzeugen
         ArrayList<Integer> fotosInZoneA = new ArrayList<>();
         ArrayList<Integer> fotosInZoneB = new ArrayList<>();
         for (Integer fotoID : fotos.keySet()) {
@@ -121,9 +122,9 @@ public class Node {
         }
 
 
-        // (1) assign the new splitted zones to each peer AND
-        // (2) assign new peers according to the new zone of the peers AND
-        // (3) delete fotos that fall outside of the new zones of the peers
+        // (1) Zuweisung die neu gesplittete Zone(zoneA) zu allen Peers von sublist peersInZoneA
+        // (2) Entfernung die Peers aus der Sublist peersInZoneB
+        // (3) Entfernung die Fotos aus der Sublist peersInZoneB
         for (Node node : peersInZoneA) {
             node.setZone(zoneA);
             node.removePeers(peersInZoneB);
@@ -137,7 +138,10 @@ public class Node {
         }
 
     }
-
+    /**
+     * Methode um ein Peer aus der Liste von Node zu entfernen
+     * @param node der zu entfernende Peer
+     */
     public void removePeer(Node node) {
         if (!peers.contains(node)) {
             throw new IllegalArgumentException("ERROR: this node does not contain " + node);
@@ -147,12 +151,20 @@ public class Node {
         peerCount--;
     }
 
+    /**
+     * Methode um alle Peer aus der Liste von Node zu entfernen
+     * @param nodes die zu entfernende Peers
+     */
     private void removePeers(List<Node> nodes) {
         for (Node node : nodes) {
             removePeer(node);
         }
     }
 
+    /**
+     * Methode um Fotos zu entfernen
+     * @param fotoIDs die zu entfernende Fotos
+     */
     private void deleteLocalFotos(List<Integer> fotoIDs) {
         for (Integer fotoID : fotoIDs) {
             deleteLocalFoto(fotoID);
