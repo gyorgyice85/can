@@ -35,7 +35,7 @@ public class TestNode {
            System.out.println(node.getZone());
         }
 
-        System.out.println("------------");
+        System.out.println("----------------");
         System.out.println(node1);
         System.out.println(node2);
         System.out.println(node3);
