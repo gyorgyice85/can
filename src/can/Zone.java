@@ -181,7 +181,7 @@ public class Zone {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (o == null || this.getClass() != o.getClass()) return false;
 
         Zone zone = (Zone) o;
 
@@ -191,6 +191,7 @@ public class Zone {
         return Double.compare(zone.y2, y2) == 0;
     }
 
+    //Some comparison Operations first call hashCode before calling equals
     @Override
     public int hashCode() {
         int result;
