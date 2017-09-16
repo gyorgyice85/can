@@ -26,12 +26,20 @@ public class TestNode {
         Node node5 = new Node(zone);
         node1.addPeer(node5);
 
+        //Es gibt die Peers von Node aus
         for (Node node : node1.getPeers()) {
             System.out.println(node.getZone());
         }
-
+        // Es gibt aus, ob alle Peers von Node die selbe Zone haben
         for (Node node : node1.getPeers().get(0).getPeers()) {
-            System.out.println(node.getZone());
+           System.out.println(node.getZone());
         }
+
+        System.out.println("------------");
+        System.out.println(node1);
+        System.out.println(node2);
+        System.out.println(node3);
+        System.out.println(node4);
+        System.out.println(node5);
     }
 }
